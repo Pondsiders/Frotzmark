@@ -319,7 +319,7 @@ def load_checkpoint(checkpoint_path: Path) -> Optional[dict]:
 @click.option('--max-turns', type=int, default=15, help='Maximum number of turns (default: 15, use 0 for unlimited)')
 @click.option('--resume', '-r', 'resume_file', type=click.Path(exists=True, path_type=Path), help='Resume from checkpoint file')
 @click.option('--checkpoint', '-c', 'checkpoint_file', type=click.Path(path_type=Path), default='checkpoint.json', help='Checkpoint file path (default: checkpoint.json)')
-@click.option('--reasoning', type=click.Choice(['low', 'medium', 'high']), help='Enable reasoning tokens (OpenRouter only): low, medium, or high effort')
+@click.option('--reasoning', type=click.Choice(['minimal', 'low', 'medium', 'high']), help='Enable reasoning tokens (OpenRouter only): minimal, low, medium, or high effort')
 @click.option('--show-score', is_flag=True, help='Append score to game output (makes model aware of score changes)')
 def main(
     story: Optional[Path],
