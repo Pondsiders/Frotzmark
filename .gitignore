@@ -20,7 +20,9 @@ wheels/
 
 # Games
 games/*.z?
-games/*.md
+games/*_manual.md
+games/*_invisiclues.txt
+games/*_solution.md
 
 # Checkpoints
 checkpoint.json

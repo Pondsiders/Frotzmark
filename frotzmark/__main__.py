@@ -250,7 +250,7 @@ def load_checkpoint(checkpoint_path: Path) -> Optional[dict]:
 
 @click.command()
 @click.argument('story', type=click.Path(exists=True, path_type=Path), required=False)
-@click.argument('manual', type=click.Path(exists=True, path_type=Path), required=False)
+@click.argument('context_files', nargs=-1, type=click.Path(exists=True, path_type=Path))
 @click.option('--model', '-m', help='Model to use (e.g., google/gemini-2.5-flash-lite)')
 @click.option('--seed', '-s', type=int, help='Random seed for reproducibility')
 @click.option('--resume', '-r', 'resume_file', type=click.Path(exists=True, path_type=Path), help='Resume from checkpoint file')
@@ -259,7 +259,7 @@ def load_checkpoint(checkpoint_path: Path) -> Optional[dict]:
 @click.option('--show-score', is_flag=True, help='Append score to game output (makes model aware of score changes)')
 def main(
     story: Optional[Path],
-    manual: Optional[Path],
+    context_files: tuple[Path, ...],
     model: Optional[str],
     seed: Optional[int],
     resume_file: Optional[Path],
@@ -272,8 +272,8 @@ def main(
 
     STORY: Path to Z-machine story file (.z3, .z5, .z8) [required unless --resume]
 
-    MANUAL: Path to game manual (markdown). If omitted, Frotzmark will
-    look for a .md file with the same name as the story file.
+    CONTEXT_FILES: Optional context files (manual, hints, walkthrough, etc.).
+    If omitted, Frotzmark will look for a .md file with the same name as the story file.
 
     Use --resume to continue from a checkpoint.
     """
@@ -295,9 +295,10 @@ def main(
         model_name = checkpoint_data['model']
         random_seed = seed if seed is not None else get_random_seed()
 
-        # Manual still needs to be discovered/specified
-        if manual is None:
-            manual = find_manual(story)
+        # Context files still need to be discovered/specified
+        if not context_files:
+            auto_manual = find_manual(story)
+            context_files = (auto_manual,) if auto_manual else ()
     else:
         # Normal mode - story is required
         if story is None:
@@ -312,18 +313,20 @@ def main(
 
         random_seed = seed if seed is not None else get_random_seed()
 
-        # Auto-discover manual if not provided
-        if manual is None:
-            manual = find_manual(story)
-            if manual:
-                click.echo(f"📖 Auto-discovered manual: {manual.name}")
+        # Auto-discover manual if no context files provided
+        if not context_files:
+            auto_manual = find_manual(story)
+            if auto_manual:
+                click.echo(f"📖 Auto-discovered manual: {auto_manual.name}")
+                context_files = (auto_manual,)
 
     # Display startup info
     click.echo("🎮 Frotzmark: LLMs vs Interactive Fiction")
     click.echo(f"Model: {model_name}")
     click.echo(f"Game: {story.name}")
-    if manual:
-        click.echo(f"Manual: {manual.name}")
+    if context_files:
+        for ctx_file in context_files:
+            click.echo(f"Context: {ctx_file.name}")
     click.echo("Press Ctrl-C to exit\n")
 
     # Configure Logfire if available and token is set
@@ -344,7 +347,7 @@ def main(
         session = GameSession(str(story), random_seed=random_seed)
         agent = create_agent(
             model_name,
-            manual_path=manual if manual else None,
+            context_files=list(context_files) if context_files else None,
             reasoning_effort=reasoning
         )
 

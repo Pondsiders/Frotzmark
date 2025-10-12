@@ -18,17 +18,17 @@ from .config import (
 )
 
 
-def load_system_prompt(manual_path: Optional[Path] = None) -> str:
+def load_system_prompt(context_files: Optional[list[Path]] = None) -> str:
     """
     Load and assemble the system prompt from files.
 
     Structure:
     - prompts/preamble.md (optional): Context and instructions
-    - [manual_path]: Game-specific documentation (optional)
+    - [context_files]: Game-specific documentation (optional, multiple files)
     - prompts/postamble.md (optional): Additional guidance
 
     Args:
-        manual_path: Path to game manual markdown file (optional)
+        context_files: List of paths to context files (e.g., manual, hints) (optional)
     """
     parts = []
 
@@ -37,9 +37,11 @@ def load_system_prompt(manual_path: Optional[Path] = None) -> str:
     if preamble_file.exists():
         parts.append(preamble_file.read_text().strip())
 
-    # Load game manual if provided
-    if manual_path and manual_path.exists():
-        parts.append(manual_path.read_text().strip())
+    # Load context files if provided
+    if context_files:
+        for path in context_files:
+            if path and path.exists():
+                parts.append(path.read_text().strip())
 
     # Load postamble
     postamble_file = PROMPT_DIR / "postamble.md"
@@ -51,7 +53,7 @@ def load_system_prompt(manual_path: Optional[Path] = None) -> str:
 
 def create_agent(
     model_name: str,
-    manual_path: Optional[Path] = None,
+    context_files: Optional[list[Path]] = None,
     reasoning_effort: Optional[str] = None
 ) -> Agent:
     """
@@ -63,7 +65,7 @@ def create_agent(
 
     Args:
         model_name: Name of the model to use (e.g., 'google/gemini-2.5-flash-lite')
-        manual_path: Path to game manual markdown file (optional)
+        context_files: List of paths to context files (e.g., manual, hints) (optional)
         reasoning_effort: Reasoning effort level for OpenRouter ('low', 'medium', 'high') (optional)
     """
 
@@ -84,7 +86,7 @@ def create_agent(
         )
         model = OpenAIChatModel(model_name, provider=provider)
 
-    system_prompt = load_system_prompt(manual_path)
+    system_prompt = load_system_prompt(context_files)
 
     # Configure model settings with reasoning if requested
     model_settings = None
