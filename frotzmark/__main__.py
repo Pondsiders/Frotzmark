@@ -185,6 +185,7 @@ def append_turn_to_transcript(
     reasoning: str,
     planning: str,
     command: str,
+    status: dict,
 ) -> None:
     """
     Append a turn to the transcript file.
@@ -196,10 +197,15 @@ def append_turn_to_transcript(
         reasoning: Content from <reasoning> tokens (OpenRouter)
         planning: Content from <planning> tags (model output)
         command: Command sent to game
+        status: Status dict from session.get_score() with 'type' and value
     """
     with open(transcript_path, 'a') as f:
-        # Turn header
-        f.write(f"## Turn {turn_number}\n\n")
+        # Turn header with score/time
+        if status['type'] == 'score':
+            header = f"## Turn {turn_number} - Score: {status['score']}\n\n"
+        else:  # time game
+            header = f"## Turn {turn_number} - Time: {status['time']}\n\n"
+        f.write(header)
 
         # Game output (strip leading/trailing whitespace for clean formatting)
         f.write(f"{game_output.strip()}\n\n")
@@ -489,10 +495,12 @@ def main(
                     else:
                         game_output = session.send_command(command)
 
+                    # Get current status (for transcript header)
+                    status = session.get_score()
+
                     # Optionally append score/time feedback to game output
                     # When enabled, the model sees the same status info a human sees
                     if show_score:
-                        status = session.get_score()
                         if status['type'] == 'score':
                             game_output = f"{game_output}\n\n[Score: {status['score']}]"
                         else:  # time game
@@ -517,6 +525,7 @@ def main(
                         reasoning=reasoning_content,
                         planning=planning_content,
                         command=command,
+                        status=status,
                     )
 
                     # Save checkpoint after each turn

@@ -1,8 +1,5 @@
+
 ---
-
-## How to Play
-
-Your goal is to maximize your score by exploring the game world, solving puzzles, and collecting treasures. Use the `score` command frequently, as described in the game documentation, to evaluate your progress through the game.
 
 **How to respond:**
 

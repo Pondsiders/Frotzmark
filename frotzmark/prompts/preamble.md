@@ -1,6 +1,6 @@
 # Your Task
 
-Your task is to play the following interactive fiction game and maximize your score.
+Your task is to participate in an interactive fiction story. Your goal is to maximize your score.
 
 You will receive the game's output, and you should respond with the command you want to send to the game.
 
@@ -13,7 +13,5 @@ I should explore the house. Let me try opening the mailbox first to see if there
 </planning>
 open mailbox
 ```
-
-The game manual is provided below to help you understand the rules and commands.
 
 ---
