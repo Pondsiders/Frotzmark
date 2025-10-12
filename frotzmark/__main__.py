@@ -58,6 +58,33 @@ def extract_thinking(text: str) -> str:
     return ""
 
 
+def check_intercepted_command(command: str) -> tuple[bool, str]:
+    """
+    Check if a command should be intercepted and return a synthetic response.
+
+    Intercepts certain meta-game commands (SAVE, RESTORE, RESTART) that would
+    disrupt benchmarking sessions. QUIT is allowed - models should have a way out.
+
+    Args:
+        command: The command from the model
+
+    Returns:
+        (is_intercepted, response_message)
+    """
+    cmd_normalized = command.strip().upper()
+
+    # Intercept save/restore commands - these don't make sense in benchmarking
+    if cmd_normalized in ['SAVE', 'RESTORE', 'LOAD']:
+        return (True, "Saving and restoring are permanently disabled.")
+
+    # Intercept restart - models should quit and restart the session externally
+    if cmd_normalized in ['RESTART']:
+        return (True, "Restart is permanently disabled.")
+
+    # QUIT is NOT intercepted - models should have a way to exit
+    return (False, "")
+
+
 def find_manual(story_path: Path) -> Optional[Path]:
     """
     Auto-discover manual file next to story file.
@@ -454,9 +481,13 @@ def main(
                         click.echo("[Game ended - no command provided]")
                         break
 
-                    # Execute the command
+                    # Execute the command (or intercept if it's a meta-game command)
                     click.echo(f">{command}")
-                    game_output = session.send_command(command)
+                    is_intercepted, intercepted_response = check_intercepted_command(command)
+                    if is_intercepted:
+                        game_output = intercepted_response
+                    else:
+                        game_output = session.send_command(command)
 
                     # Optionally append score/time feedback to game output
                     # When enabled, the model sees the same status info a human sees
