@@ -253,7 +253,7 @@ def load_checkpoint(checkpoint_path: Path) -> Optional[dict]:
 @click.argument('context_files', nargs=-1, type=click.Path(exists=True, path_type=Path))
 @click.option('--model', '-m', help='Model to use (e.g., google/gemini-2.5-flash-lite)')
 @click.option('--seed', '-s', type=int, help='Random seed for reproducibility')
-@click.option('--max-turns', type=int, default=15, help='Maximum number of turns (default: 15)')
+@click.option('--max-turns', type=int, default=15, help='Maximum number of turns (default: 15, use 0 for unlimited)')
 @click.option('--resume', '-r', 'resume_file', type=click.Path(exists=True, path_type=Path), help='Resume from checkpoint file')
 @click.option('--checkpoint', '-c', 'checkpoint_file', type=click.Path(path_type=Path), default='checkpoint.json', help='Checkpoint file path (default: checkpoint.json)')
 @click.option('--reasoning', type=click.Choice(['low', 'medium', 'high']), help='Enable reasoning tokens (OpenRouter only): low, medium, or high effort')
@@ -329,7 +329,8 @@ def main(
     if context_files:
         for ctx_file in context_files:
             click.echo(f"Context: {ctx_file.name}")
-    click.echo(f"Max turns: {max_turns}")
+    turns_display = "unlimited" if max_turns == 0 else str(max_turns)
+    click.echo(f"Max turns: {turns_display}")
     click.echo("Press Ctrl-C to exit\n")
 
     # Configure Logfire if available and token is set
@@ -407,8 +408,8 @@ def main(
                 while not session.is_finished():
                     turn_number += 1
 
-                    # Check turn limit
-                    if turn_number > max_turns:
+                    # Check turn limit (0 means unlimited)
+                    if max_turns > 0 and turn_number > max_turns:
                         click.echo(f"\n[Maximum turns ({max_turns}) reached]")
                         break
 
