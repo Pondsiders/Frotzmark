@@ -143,6 +143,12 @@ def create_transcript(
     story_path: Path,
     model_name: str,
     started_at: datetime,
+    temperature: Optional[float] = None,
+    seed: Optional[int] = None,
+    max_turns: int = 15,
+    context_files: Optional[tuple[Path, ...]] = None,
+    show_score: bool = False,
+    reasoning: Optional[str] = None,
 ) -> Path:
     """
     Create a new transcript file with frontmatter.
@@ -163,14 +169,37 @@ def create_transcript(
     # e.g., "2025-10-02 09:51:03 -0700"
     started_str = started_at.strftime('%Y-%m-%d %H:%M:%S %z')
 
-    # Write frontmatter
-    frontmatter = f"""---
-story: "{story_path}"
-model: "{model_name}"
-started: "{started_str}"
----
+    # Build frontmatter with experimental parameters
+    frontmatter_lines = [
+        "---",
+        f'story: "{story_path}"',
+        f'model: "{model_name}"',
+        f'started: "{started_str}"',
+    ]
 
-"""
+    # Add optional parameters
+    if temperature is not None:
+        frontmatter_lines.append(f'temperature: {temperature}')
+
+    if seed is not None:
+        frontmatter_lines.append(f'seed: {seed}')
+
+    frontmatter_lines.append(f'max_turns: {max_turns}')
+
+    if context_files:
+        context_names = [f.name for f in context_files]
+        frontmatter_lines.append(f'context: {context_names}')
+
+    if show_score:
+        frontmatter_lines.append(f'show_score: {show_score}')
+
+    if reasoning:
+        frontmatter_lines.append(f'reasoning: "{reasoning}"')
+
+    frontmatter_lines.append("---")
+    frontmatter_lines.append("")  # blank line after frontmatter
+
+    frontmatter = '\n'.join(frontmatter_lines) + '\n'
 
     with open(transcript_path, 'w') as f:
         f.write(frontmatter)
@@ -430,7 +459,17 @@ def main(
             # Create transcript file
             # Note: Initial game output will be written as part of Turn 1
             session_start = datetime.now().astimezone()
-            transcript_path = create_transcript(story, model_name, session_start)
+            transcript_path = create_transcript(
+                story_path=story,
+                model_name=model_name,
+                started_at=session_start,
+                temperature=temperature,
+                seed=seed,
+                max_turns=max_turns,
+                context_files=context_files,
+                show_score=show_score,
+                reasoning=reasoning,
+            )
 
         # Main game loop
         span_context = (
