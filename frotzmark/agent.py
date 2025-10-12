@@ -54,6 +54,7 @@ def load_system_prompt(context_files: Optional[list[Path]] = None) -> str:
 def create_agent(
     model_name: str,
     context_files: Optional[list[Path]] = None,
+    temperature: Optional[float] = None,
     reasoning_effort: Optional[str] = None
 ) -> Agent:
     """
@@ -66,6 +67,7 @@ def create_agent(
     Args:
         model_name: Name of the model to use (e.g., 'google/gemini-2.5-flash-lite')
         context_files: List of paths to context files (e.g., manual, hints) (optional)
+        temperature: Sampling temperature (0.0 = deterministic, higher = more creative) (optional)
         reasoning_effort: Reasoning effort level for OpenRouter ('low', 'medium', 'high') (optional)
     """
 
@@ -88,17 +90,26 @@ def create_agent(
 
     system_prompt = load_system_prompt(context_files)
 
-    # Configure model settings with reasoning if requested
+    # Configure model settings
     model_settings = None
+    settings_kwargs = {}
+
+    # Add temperature if specified
+    if temperature is not None:
+        settings_kwargs['temperature'] = temperature
+
+    # Add reasoning config if specified (OpenRouter only)
     if reasoning_effort and PROVIDER_TYPE == "openrouter":
-        model_settings = ModelSettings(
-            extra_body={
-                'reasoning': {
-                    'effort': reasoning_effort,
-                    'exclude': False  # Include reasoning output in response
-                }
+        settings_kwargs['extra_body'] = {
+            'reasoning': {
+                'effort': reasoning_effort,
+                'exclude': False  # Include reasoning output in response
             }
-        )
+        }
+
+    # Create ModelSettings if we have any config
+    if settings_kwargs:
+        model_settings = ModelSettings(**settings_kwargs)
 
     agent = Agent(
         model=model,

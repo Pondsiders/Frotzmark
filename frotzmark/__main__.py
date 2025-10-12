@@ -286,6 +286,7 @@ def load_checkpoint(checkpoint_path: Path) -> Optional[dict]:
 @click.argument('context_files', nargs=-1, type=click.Path(exists=True, path_type=Path))
 @click.option('--model', '-m', help='Model to use (e.g., google/gemini-2.5-flash-lite)')
 @click.option('--seed', '-s', type=int, help='Random seed for reproducibility')
+@click.option('--temperature', '-t', type=float, help='Sampling temperature (0.0 = deterministic, higher = more creative)')
 @click.option('--max-turns', type=int, default=15, help='Maximum number of turns (default: 15, use 0 for unlimited)')
 @click.option('--resume', '-r', 'resume_file', type=click.Path(exists=True, path_type=Path), help='Resume from checkpoint file')
 @click.option('--checkpoint', '-c', 'checkpoint_file', type=click.Path(path_type=Path), default='checkpoint.json', help='Checkpoint file path (default: checkpoint.json)')
@@ -296,6 +297,7 @@ def main(
     context_files: tuple[Path, ...],
     model: Optional[str],
     seed: Optional[int],
+    temperature: Optional[float],
     max_turns: int,
     resume_file: Optional[Path],
     checkpoint_file: Path,
@@ -385,6 +387,7 @@ def main(
         agent = create_agent(
             model_name,
             context_files=list(context_files) if context_files else None,
+            temperature=temperature,
             reasoning_effort=reasoning
         )
 
