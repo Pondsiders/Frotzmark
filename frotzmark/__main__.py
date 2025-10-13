@@ -536,11 +536,9 @@ def main(
                     # Strip thinking tags to get just the command
                     command = strip_thinking_tags(model_output)
 
-                    if not command:
-                        click.echo("[Game ended - no command provided]")
-                        break
-
                     # Execute the command (or intercept if it's a meta-game command)
+                    # Note: Empty commands are sent to the game, which will respond with an error
+                    # (e.g., "I beg your pardon?"), allowing the model to recover from formatting mistakes
                     click.echo(f">{command}")
                     is_intercepted, intercepted_response = check_intercepted_command(command)
                     if is_intercepted:
