@@ -31,4 +31,4 @@ checkpoint.sav
 *.checkpoint.sav
 
 # Transcripts
-transcripts/transcript_*.md
+transcripts/*.md
