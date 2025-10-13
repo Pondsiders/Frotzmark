@@ -1,6 +1,6 @@
 # Your Task
 
-Your task is to participate in an interactive fiction story. Your goal is to maximize your score.
+Your task is to participate in an interactive fiction story.
 
 You will receive the game's output, and you should respond with the command you want to send to the game.
 
