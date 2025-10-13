@@ -18,17 +18,22 @@ from .config import (
 )
 
 
-def load_system_prompt(context_files: Optional[list[Path]] = None) -> str:
+def load_system_prompt(
+    context_files: Optional[list[Path]] = None,
+    objective: Optional[str] = None
+) -> str:
     """
     Load and assemble the system prompt from files.
 
     Structure:
     - prompts/preamble.md (optional): Context and instructions
+    - [objective block]: Injected if objective is specified
     - [context_files]: Game-specific documentation (optional, multiple files)
     - prompts/postamble.md (optional): Additional guidance
 
     Args:
         context_files: List of paths to context files (e.g., manual, hints) (optional)
+        objective: Specific objective to achieve (e.g., "reach the Living Room") (optional)
     """
     parts = []
 
@@ -36,6 +41,17 @@ def load_system_prompt(context_files: Optional[list[Path]] = None) -> str:
     preamble_file = PROMPT_DIR / "preamble.md"
     if preamble_file.exists():
         parts.append(preamble_file.read_text().strip())
+
+    # Inject objective block if specified
+    if objective:
+        objective_block = f"""# Your Objective
+
+Your objective is:
+
+- {objective}
+
+After you achieve your objective, QUIT the game."""
+        parts.append(objective_block)
 
     # Load context files if provided
     if context_files:
@@ -55,7 +71,8 @@ def create_agent(
     model_name: str,
     context_files: Optional[list[Path]] = None,
     temperature: Optional[float] = None,
-    reasoning_effort: Optional[str] = None
+    reasoning_effort: Optional[str] = None,
+    objective: Optional[str] = None
 ) -> Agent:
     """
     Create and configure the PydanticAI agent.
@@ -69,6 +86,7 @@ def create_agent(
         context_files: List of paths to context files (e.g., manual, hints) (optional)
         temperature: Sampling temperature (0.0 = deterministic, higher = more creative) (optional)
         reasoning_effort: Reasoning effort level for OpenRouter ('low', 'medium', 'high') (optional)
+        objective: Specific objective to achieve (e.g., "reach the Living Room") (optional)
     """
 
     if PROVIDER_TYPE == "openrouter":
@@ -88,7 +106,7 @@ def create_agent(
         )
         model = OpenAIChatModel(model_name, provider=provider)
 
-    system_prompt = load_system_prompt(context_files)
+    system_prompt = load_system_prompt(context_files, objective=objective)
 
     # Configure model settings
     model_settings = None

@@ -149,6 +149,7 @@ def create_transcript(
     context_files: Optional[tuple[Path, ...]] = None,
     show_score: bool = False,
     reasoning: Optional[str] = None,
+    objective: Optional[str] = None,
 ) -> Path:
     """
     Create a new transcript file with frontmatter.
@@ -198,6 +199,9 @@ def create_transcript(
 
     if reasoning:
         frontmatter_lines.append(f'reasoning: "{reasoning}"')
+
+    if objective:
+        frontmatter_lines.append(f'objective: "{objective}"')
 
     frontmatter_lines.append("---")
     frontmatter_lines.append("")  # blank line after frontmatter
@@ -324,6 +328,7 @@ def load_checkpoint(checkpoint_path: Path) -> Optional[dict]:
 @click.option('--checkpoint', '-c', 'checkpoint_file', type=click.Path(path_type=Path), default='checkpoint.json', help='Checkpoint file path (default: checkpoint.json)')
 @click.option('--reasoning', type=click.Choice(['minimal', 'low', 'medium', 'high']), help='Enable reasoning tokens (OpenRouter only): minimal, low, medium, or high effort')
 @click.option('--show-score', is_flag=True, help='Append score to game output (makes model aware of score changes)')
+@click.option('--objective', help='Specific objective to achieve (e.g., "reach the Living Room"). When set, overrides default goal of maximizing score.')
 def main(
     story: Optional[Path],
     context_files: tuple[Path, ...],
@@ -335,6 +340,7 @@ def main(
     checkpoint_file: Path,
     reasoning: Optional[str],
     show_score: bool,
+    objective: Optional[str],
 ) -> None:
     """
     Frotzmark: LLMs vs Interactive Fiction
@@ -420,7 +426,8 @@ def main(
             model_name,
             context_files=list(context_files) if context_files else None,
             temperature=temperature,
-            reasoning_effort=reasoning
+            reasoning_effort=reasoning,
+            objective=objective
         )
 
         # Handle checkpoint restore or fresh start
@@ -472,6 +479,7 @@ def main(
                 context_files=context_files,
                 show_score=show_score,
                 reasoning=reasoning,
+                objective=objective,
             )
 
         # Main game loop
