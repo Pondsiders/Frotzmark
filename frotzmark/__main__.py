@@ -160,10 +160,13 @@ def create_transcript(
     transcripts_dir = Path('transcripts')
     transcripts_dir.mkdir(exist_ok=True)
 
-    # Generate filename: transcript_YYYY-MM-DD_HHMM_gamename.md
+    # Generate filename: GAME_MODEL_YYYY-MM-DD_HHMM.md
+    # Sanitize model name: remove org prefix (everything before slash), replace colons with hyphens
+    model_basename = model_name.split('/')[-1] if '/' in model_name else model_name
+    model_basename = model_basename.replace(':', '-')
     timestamp = started_at.strftime('%Y-%m-%d_%H%M')
     game_name = story_path.stem
-    transcript_path = transcripts_dir / f'transcript_{timestamp}_{game_name}.md'
+    transcript_path = transcripts_dir / f'{game_name}_{model_basename}_{timestamp}.md'
 
     # Format started timestamp with numeric timezone offset
     # e.g., "2025-10-02 09:51:03 -0700"
