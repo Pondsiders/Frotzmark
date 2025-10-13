@@ -11,6 +11,10 @@ dependencies = [
     "click>=8.0.0",
 ]
 
+[project.scripts]
+frotzmark = "frotzmark.__main__:main"
+frotzmark-judge = "frotzmark.judge:main"
+
 [project.optional-dependencies]
 logfire = [
     "logfire>=2.6.0",
@@ -20,3 +24,9 @@ logfire = [
 dev = [
     "pytest>=8.4.2",
 ]
+
+[tool.uv]
+package = true
+
+[tool.setuptools]
+packages = ["frotzmark"]
