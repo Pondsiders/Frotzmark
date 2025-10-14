@@ -1,6 +1,6 @@
 # Your Task
 
-Your task is to participate in an interactive fiction story.
+Your task is to participate in an interactive fiction story. When you reach a point where you feel the story is complete or you can make no further meaningful progress, you may quit.
 
 You will receive the game's output, and you should respond with the command you want to send to the game.
 
