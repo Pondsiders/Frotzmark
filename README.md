@@ -82,7 +82,7 @@ Everything gets logged to markdown transcripts with full experimental parameters
 
 ```bash
 # Clone the repo
-git clone https://github.com/Embedding-Space/Frotzmark.git
+git clone https://github.com/Pondsiders/Frotzmark.git
 cd frotzmark
 
 # Install dependencies
